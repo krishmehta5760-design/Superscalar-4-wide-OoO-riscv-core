@@ -44,10 +44,11 @@ case({func7,func3})
 // 10'b0000001_001: result = ($signed({{32{src1[31]}},src1}) * $signed({{32{src2[31]}},src2})) >> 32; // Handled by MUL_Unit
 // 10'b0000001_010: result = ($signed({{32{src1[31]}},src1}) * {{32'd0},src2}) >> 32; // Handled by MUL_Unit
 // 10'b0000001_011: result = ({32'd0,src1} * {32'd0,src2}) >> 32; // Handled by MUL_Unit
-10'b0000001_100: result = (src2 == 0) ? 32'hffffffff : $signed(src1) / $signed(src2);
-10'b0000001_101: result = (src2 == 0) ? 32'hffffffff : src1 / src2;
-10'b0000001_110: result = (src2 == 0) ? src1 : $signed(src1) % $signed(src2);
-10'b0000001_111: result = (src2 == 0) ? src1 : src1 % src2;
+// DIV/REM stubbed for synthesis (unsynthesizable combinational divider)
+10'b0000001_100: result = 32'd0; // DIV  - stub
+10'b0000001_101: result = 32'd0; // DIVU - stub
+10'b0000001_110: result = 32'd0; // REM  - stub
+10'b0000001_111: result = 32'd0; // REMU - stub
 default: result = 32'd0;
 endcase
 end

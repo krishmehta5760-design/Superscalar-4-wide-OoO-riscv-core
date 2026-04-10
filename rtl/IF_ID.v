@@ -14,7 +14,9 @@ output reg [3:0] valid_out_D;
 
 always@(posedge clk,negedge rst)begin
 
-if(!rst || flush) {ins0_out_D,ins1_out_D,ins2_out_D,ins3_out_D,valid_out_D,pc_0_D,pc_1_D,pc_2_D,pc_3_D} <= 260'd0;
+if(!rst) {ins0_out_D,ins1_out_D,ins2_out_D,ins3_out_D,valid_out_D,pc_0_D,pc_1_D,pc_2_D,pc_3_D} <= 260'd0;
+
+else if(flush) {ins0_out_D,ins1_out_D,ins2_out_D,ins3_out_D,valid_out_D,pc_0_D,pc_1_D,pc_2_D,pc_3_D} <= 260'd0;
 
 else begin
 

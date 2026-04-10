@@ -1,0 +1,33 @@
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2025  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.60+64 (git sha1 17ca71e1a, g++ 13.3.0-6ubuntu2~24.04 -fPIC -O3)
+
+-- Running command `read_verilog *.v; synth -top TOP; stat' --
+
+1. Executing Verilog-2005 frontend: ALU.v
+Parsing Verilog input from `ALU.v' to AST representation.
+verilog frontend filename ALU.v
+Generating RTLIL representation for module `\ALU'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: BPU.v
+Parsing Verilog input from `BPU.v' to AST representation.
+verilog frontend filename BPU.v
+Generating RTLIL representation for module `\BPU'.
+Successfully finished Verilog frontend.
+
+3. Executing Verilog-2005 frontend: CDB.v
+Parsing Verilog input from `CDB.v' to AST representation.
+verilog frontend filename CDB.v
+Generating RTLIL representation for module `\CDB'.
+Successfully finished Verilog frontend.
+
+4. Executing Verilog-2005 frontend: Data_Memory.v
+Parsing Verilog input from `Data_Memory.v' to AST representation.
+verilog frontend filename Data_Memory.v
+Generating RTLIL representation for module `\Data_Memory'.
+Warning: Replacing memory \mem with list of registers. See Data_Memory.v:19

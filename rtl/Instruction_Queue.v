@@ -16,7 +16,15 @@ reg [31:0] mem0 [0:7];
 reg [31:0] mem1 [0:7];
 reg [31:0] mem2 [0:7];
 reg [31:0] mem3 [0:7];
-reg [3:0]  mem_valid [0:7];
+reg [3:0] mem_valid [0:7];
+
+integer i;
+
+initial begin
+
+for(i = 0; i < 8; i = i + 1) mem_valid[i] = 4'd0;
+
+end
 
 reg [31:0] mem_pc0 [0:7];
 reg [31:0] mem_pc1 [0:7];
@@ -26,12 +34,13 @@ reg [31:0] mem_pc3 [0:7];
 reg [2:0] write_ptr,read_ptr;
 reg [3:0] count;
 
-assign full  = (count == 8);
+assign full = (count == 8);
 assign empty = (count == 0);
 
 always@(posedge clk,negedge rst)begin
 
-if(!rst || flush) write_ptr <= 3'b000;
+if(!rst) write_ptr <= 3'b000;
+else if(flush) write_ptr <= 3'b000;
 
 else if(push && !full && !flush)begin
 
@@ -54,19 +63,31 @@ end
 
 always@(posedge clk,negedge rst)begin
 
-if(!rst || flush) begin
+if(!rst) begin
 
 read_ptr <= 3'b000;
 ins0_out <= 32'd0;
 ins1_out <= 32'd0;
 ins2_out <= 32'd0;
 ins3_out <= 32'd0;
-valid_out <= 4'b0000;
-
 pc_0_out <= 32'd0;
 pc_1_out <= 32'd0;
 pc_2_out <= 32'd0;
 pc_3_out <= 32'd0;
+valid_out <= 4'd0;
+
+end else if (flush) begin
+
+read_ptr <= 3'b000;
+ins0_out <= 32'd0;
+ins1_out <= 32'd0;
+ins2_out <= 32'd0;
+ins3_out <= 32'd0;
+pc_0_out <= 32'd0;
+pc_1_out <= 32'd0;
+pc_2_out <= 32'd0;
+pc_3_out <= 32'd0;
+valid_out <= 4'd0;
 
 end
 
@@ -91,7 +112,8 @@ end
 
 always@(posedge clk,negedge rst)begin
 
-if(!rst || flush) count <= 4'b0000;
+if(!rst) count <= 4'b0000;
+else if(flush) count <= 4'b0000;
 
 else begin
 

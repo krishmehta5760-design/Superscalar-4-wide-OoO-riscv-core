@@ -37,12 +37,22 @@ wire is_squash_free = squash_free_valid && (squash_free_preg >= 32);
 
 assign total_free = is_free_0 + is_free_1 + is_free_2 + is_free_3 + is_squash_free;
 
+// Synthesizable wrap-around function (replaces % 96)
+function [6:0] wrap96;
+input [6:0] val;
+begin
+    wrap96 = (val >= 7'd96) ? (val - 7'd96) : val;
+end
+endfunction
+
 integer i;
 integer offset;
 
 always@(*)begin
 
-stall = (fl_count < total_req);
+// We stall if we have fewer than 8 registers left.
+// This is based on the fl_count register, which breaks the combinatorial loop.
+stall = (fl_count < 7'd8); 
 
 offset = 0;
 
@@ -52,22 +62,22 @@ alloc_preg_2 = 0;
 alloc_preg_3 = 0;
 
 if (!stall && alloc_req[0]) begin
-alloc_preg_0 = free_list[(fl_head + offset) % 96];
+alloc_preg_0 = free_list[wrap96(fl_head + offset)];
 offset = offset + 1;
 end
 
 if (!stall && alloc_req[1]) begin
-alloc_preg_1 = free_list[(fl_head + offset) % 96];
+alloc_preg_1 = free_list[wrap96(fl_head + offset)];
 offset = offset + 1;
 end
 
 if (!stall && alloc_req[2]) begin
-alloc_preg_2 = free_list[(fl_head + offset) % 96];
+alloc_preg_2 = free_list[wrap96(fl_head + offset)];
 offset = offset + 1;
 end
 
 if (!stall && alloc_req[3]) begin
-alloc_preg_3 = free_list[(fl_head + offset) % 96];
+alloc_preg_3 = free_list[wrap96(fl_head + offset)];
 end
 
 end
@@ -88,15 +98,15 @@ end
 
 else begin
 
-fl_head <= (!stall) ? ((fl_head + total_req) % 96) : fl_head;
-fl_tail <= (fl_tail + total_free) % 96;
+fl_head <= (!stall) ? wrap96(fl_head + total_req) : fl_head;
+fl_tail <= wrap96(fl_tail + total_free);
 fl_count <= fl_count - ((!stall) ? total_req : 0) + total_free;
 
 if(is_free_0) free_list[fl_tail] <= rob_free_preg_0;
-if(is_free_1) free_list[(fl_tail + is_free_0) % 96] <= rob_free_preg_1;
-if(is_free_2) free_list[(fl_tail + is_free_0 + is_free_1) % 96] <= rob_free_preg_2;
-if(is_free_3) free_list[(fl_tail + is_free_0 + is_free_1 + is_free_2) % 96] <= rob_free_preg_3;
-if(is_squash_free) free_list[(fl_tail + is_free_0 + is_free_1 + is_free_2 + is_free_3) % 96] <= squash_free_preg;
+if(is_free_1) free_list[wrap96(fl_tail + is_free_0)] <= rob_free_preg_1;
+if(is_free_2) free_list[wrap96(fl_tail + is_free_0 + is_free_1)] <= rob_free_preg_2;
+if(is_free_3) free_list[wrap96(fl_tail + is_free_0 + is_free_1 + is_free_2)] <= rob_free_preg_3;
+if(is_squash_free) free_list[wrap96(fl_tail + is_free_0 + is_free_1 + is_free_2 + is_free_3)] <= squash_free_preg;
 
 end
 

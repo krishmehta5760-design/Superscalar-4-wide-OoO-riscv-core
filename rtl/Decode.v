@@ -35,7 +35,7 @@ case(opcode_0)
             rd_0 = ins_0[11:7];
             func7_0 = ins_0[31:25];
             func3_0 = ins_0[14:12];
-            has_dest[0] = 1'b1;
+            has_dest[0] = (ins_0[11:7] != 5'd0);
             
             end
             
@@ -45,7 +45,7 @@ case(opcode_0)
             rd_0 = ins_0[11:7];
             imm_0 = {{20{ins_0[31]}},ins_0[31:20]};
             func3_0 = ins_0[14:12];
-            has_dest[0] = 1'b1;
+            has_dest[0] = (ins_0[11:7] != 5'd0);
             
             end
             
@@ -55,7 +55,7 @@ case(opcode_0)
             rd_0 = ins_0[11:7];
             imm_0 = {{20{ins_0[31]}},ins_0[31:20]};
             func3_0 = ins_0[14:12];
-            has_dest[0] = 1'b1;
+            has_dest[0] = (ins_0[11:7] != 5'd0);
             is_load[0] = 1'b1;
             
             end
@@ -84,7 +84,7 @@ case(opcode_0)
 
             rd_0 = ins_0[11:7];
             imm_0 = {{11{ins_0[31]}},ins_0[31],ins_0[19:12],ins_0[20],ins_0[30:21],1'b0};
-            has_dest[0] = 1'b1;
+            has_dest[0] = (ins_0[11:7] != 5'd0);
             is_jump[0] = 1'b1;
             
             end
@@ -95,7 +95,7 @@ case(opcode_0)
             rd_0 = ins_0[11:7];
             imm_0 = {{20{ins_0[31]}},ins_0[31:20]};
             func3_0 = ins_0[14:12];
-            has_dest[0] = 1'b1;
+            has_dest[0] = (ins_0[11:7] != 5'd0);
             is_jalr[0] = 1'b1;
             
             end
@@ -115,7 +115,7 @@ case(opcode_1)
             rd_1 = ins_1[11:7];
             func7_1 = ins_1[31:25];
             func3_1 = ins_1[14:12];
-            has_dest[1] = 1'b1;
+            has_dest[1] = (ins_1[11:7] != 5'd0);
             
             end
             
@@ -125,7 +125,7 @@ case(opcode_1)
             rd_1 = ins_1[11:7];
             imm_1 = {{20{ins_1[31]}},ins_1[31:20]};
             func3_1 = ins_1[14:12];
-            has_dest[1] = 1'b1;
+            has_dest[1] = (ins_1[11:7] != 5'd0);
             
             end
             
@@ -135,7 +135,7 @@ case(opcode_1)
             rd_1 = ins_1[11:7];
             imm_1 = {{20{ins_1[31]}},ins_1[31:20]};
             func3_1 = ins_1[14:12];
-            has_dest[1] = 1'b1;
+            has_dest[1] = (ins_1[11:7] != 5'd0);
             is_load[1] = 1'b1;
             
             end
@@ -164,7 +164,7 @@ case(opcode_1)
 
             rd_1 = ins_1[11:7];
             imm_1 = {{11{ins_1[31]}},ins_1[31],ins_1[19:12],ins_1[20],ins_1[30:21],1'b0};
-            has_dest[1] = 1'b1;
+            has_dest[1] = (ins_1[11:7] != 5'd0);
             is_jump[1] = 1'b1;
             
             end
@@ -175,7 +175,7 @@ case(opcode_1)
             rd_1 = ins_1[11:7];
             imm_1 = {{20{ins_1[31]}},ins_1[31:20]};
             func3_1 = ins_1[14:12];
-            has_dest[1] = 1'b1;
+            has_dest[1] = (ins_1[11:7] != 5'd0);
             is_jalr[1] = 1'b1;
             
             end
@@ -195,7 +195,7 @@ case(opcode_2)
             rd_2 = ins_2[11:7];
             func7_2 = ins_2[31:25];
             func3_2 = ins_2[14:12];
-            has_dest[2] = 1'b1;
+            has_dest[2] = (ins_2[11:7] != 5'd0);
             
             end
             
@@ -205,7 +205,7 @@ case(opcode_2)
             rd_2 = ins_2[11:7];
             imm_2 = {{20{ins_2[31]}},ins_2[31:20]};
             func3_2 = ins_2[14:12];
-            has_dest[2] = 1'b1;
+            has_dest[2] = (ins_2[11:7] != 5'd0);
             
             end
             
@@ -215,7 +215,7 @@ case(opcode_2)
             rd_2 = ins_2[11:7];
             imm_2 = {{20{ins_2[31]}},ins_2[31:20]};
             func3_2 = ins_2[14:12];
-            has_dest[2] = 1'b1;
+            has_dest[2] = (ins_2[11:7] != 5'd0);
             is_load[2] = 1'b1;
             
             end
@@ -244,7 +244,7 @@ case(opcode_2)
 
             rd_2 = ins_2[11:7];
             imm_2 = {{11{ins_2[31]}},ins_2[31],ins_2[19:12],ins_2[20],ins_2[30:21],1'b0};
-            has_dest[2] = 1'b1;
+            has_dest[2] = (ins_2[11:7] != 5'd0);
             is_jump[2] = 1'b1;
             
             end
@@ -255,7 +255,7 @@ case(opcode_2)
             rd_2 = ins_2[11:7];
             imm_2 = {{20{ins_2[31]}},ins_2[31:20]};
             func3_2 = ins_2[14:12];
-            has_dest[2] = 1'b1;
+            has_dest[2] = (ins_2[11:7] != 5'd0);
             is_jalr[2] = 1'b1;
             
             end
@@ -275,7 +275,7 @@ case(opcode_3)
             rd_3 = ins_3[11:7];
             func7_3 = ins_3[31:25];
             func3_3 = ins_3[14:12];
-            has_dest[3] = 1'b1;
+            has_dest[3] = (ins_3[11:7] != 5'd0);
             
             end
             
@@ -285,7 +285,7 @@ case(opcode_3)
             rd_3 = ins_3[11:7];
             imm_3 = {{20{ins_3[31]}},ins_3[31:20]};
             func3_3 = ins_3[14:12];
-            has_dest[3] = 1'b1;
+            has_dest[3] = (ins_3[11:7] != 5'd0);
             
             end
             
@@ -295,7 +295,7 @@ case(opcode_3)
             rd_3 = ins_3[11:7];
             imm_3 = {{20{ins_3[31]}},ins_3[31:20]};
             func3_3 = ins_3[14:12];
-            has_dest[3] = 1'b1;
+            has_dest[3] = (ins_3[11:7] != 5'd0);
             is_load[3] = 1'b1;
             
             end
@@ -324,7 +324,7 @@ case(opcode_3)
 
             rd_3 = ins_3[11:7];
             imm_3 = {{11{ins_3[31]}},ins_3[31],ins_3[19:12],ins_3[20],ins_3[30:21],1'b0};
-            has_dest[3] = 1'b1;
+            has_dest[3] = (ins_3[11:7] != 5'd0);
             is_jump[3] = 1'b1;
             
             end
@@ -335,7 +335,7 @@ case(opcode_3)
             rd_3 = ins_3[11:7];
             imm_3 = {{20{ins_3[31]}},ins_3[31:20]};
             func3_3 = ins_3[14:12];
-            has_dest[3] = 1'b1;
+            has_dest[3] = (ins_3[11:7] != 5'd0);
             is_jalr[3] = 1'b1;
             
             end

@@ -38,6 +38,13 @@ reg prf_rdy [0:127];
 
 integer i;
 
+initial begin
+    for (i = 0; i < 128; i = i + 1) begin
+        prf_data[i] = 32'd0;
+        prf_rdy[i] = 1'b1; // Initially all physical registers are ready
+    end
+end
+
 assign lsq_data_prs1_0 = (lsq_rd_prs1_0 == 7'd0) ? 32'd0 : prf_data[lsq_rd_prs1_0];
 assign lsq_data_prs1_1 = (lsq_rd_prs1_1 == 7'd0) ? 32'd0 : prf_data[lsq_rd_prs1_1];
 assign lsq_data_prs1_2 = (lsq_rd_prs1_2 == 7'd0) ? 32'd0 : prf_data[lsq_rd_prs1_2];

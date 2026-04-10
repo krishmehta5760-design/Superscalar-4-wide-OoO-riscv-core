@@ -73,10 +73,12 @@ assign rob_count = (rob_valid[0] + rob_valid[1] + rob_valid[2] + rob_valid[3] +
                     rob_valid[28] + rob_valid[29] + rob_valid[30] + rob_valid[31]);
 
 always @(*)begin
-    num_incoming = valid_in[0] + valid_in[1] + valid_in[2] + valid_in[3];
+    // rob_count is based on valid registers, so this breaks the combinatorial loop.
+    // We leave 4 slots for rob_full and 8 slots for rob_almost_full to allow propagation time.
+    rob_full = (rob_count >= ROB_DEPTH - 4); 
+    rob_almost_full = (rob_count >= ROB_DEPTH - 8);
+    num_incoming = valid_in[0] + valid_in[1] + valid_in[2] + valid_in[3]; // Keep for pointer math, not for stall
     free_slots = ROB_DEPTH - rob_count;
-    rob_full = (rob_count >= ROB_DEPTH - 4); // Leave margin for 4-wide dispatch
-    rob_almost_full = (num_incoming > free_slots);
 end
 
 wire cdb_match [0:ROB_DEPTH-1];

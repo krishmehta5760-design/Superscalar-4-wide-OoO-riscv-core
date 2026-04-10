@@ -122,7 +122,7 @@ if(valid_in[2] && (is_load_in[2] || is_store_in[2])) num_incoming = num_incoming
 
 if(valid_in[3] && (is_load_in[3] || is_store_in[3])) num_incoming = num_incoming + 1;
 
-lsq_full = (lsq_count == LSQ_DEPTH);
+lsq_full = (lsq_count >= LSQ_DEPTH);
 
 end
 
@@ -201,7 +201,38 @@ end
 
 always@(posedge clk or negedge rst)begin
 
-if(!rst || flush)begin
+if(!rst)begin
+
+for(i = 0; i < LSQ_DEPTH; i = i + 1)begin
+lsq_prs1[i]       <= 7'd0;
+lsq_prs2[i]       <= 7'd0;
+lsq_prd[i]        <= 7'd0;
+lsq_imm[i]        <= 32'd0;
+lsq_func3[i]      <= 3'd0;
+lsq_is_load[i]    <= 1'b0;
+lsq_is_store[i]   <= 1'b0;
+lsq_addr_ready[i] <= 1'b0;
+lsq_data_ready[i] <= 1'b0;
+lsq_addr[i]       <= 32'd0;
+lsq_store_data[i] <= 32'd0;
+lsq_issued[i]     <= 1'b0;
+lsq_valid[i]      <= 1'b0;
+end
+
+lsq_head      <= 3'd0;
+lsq_tail      <= 3'd0;
+lsq_count     <= 4'd0;
+lsq_cdb_valid <= 1'b0;
+lsq_cdb_tag   <= 7'd0;
+lsq_cdb_data  <= 32'd0;
+mem_addr      <= 32'd0;
+mem_wdata     <= 32'd0;
+mem_we        <= 1'b0;
+mem_re        <= 1'b0;
+mem_func3     <= 3'd0;
+issued_load_idx <= 3'd0;
+
+end else if(flush)begin
 
 for(i = 0; i < LSQ_DEPTH; i = i + 1)begin
 lsq_prs1[i]       <= 7'd0;
@@ -455,22 +486,20 @@ if(valid_in[3] && (is_load_in[3] || is_store_in[3])) begin
     lsq_ptr = lsq_ptr + 1;
 end
 
-// -------- Tail update --------
-lsq_tail <= (lsq_tail + num_incoming) % LSQ_DEPTH;
+// -------- Tail & count update (dispatch active) --------
+lsq_tail  <= (lsq_tail + num_incoming) % LSQ_DEPTH;
+lsq_count <= lsq_count + num_incoming
+             - (load_done  ? 1 : 0)
+             - (store_done ? 1 : 0);
 
-    if(!stall && !lsq_full)begin
-        lsq_count <= lsq_count + num_incoming
-                     - (load_done  ? 1 : 0)
-                     - (store_done ? 1 : 0);
-                     
-    end
+end // end dispatch guard
 
-    else begin
-        lsq_count <= lsq_count
-                     - (load_done  ? 1 : 0)
-                     - (store_done ? 1 : 0);
-    end
-
+// ── 6. Count update when NOT dispatching (stall or full) ──────────────────
+// Drains MUST still decrement count even when we can't accept new entries!
+else begin
+    lsq_count <= lsq_count
+                 - (load_done  ? 1 : 0)
+                 - (store_done ? 1 : 0);
 end
 
 end

@@ -68,34 +68,64 @@ assign jal_tgt1 = jal_target(pc+4, ins1);
 assign jal_tgt2 = jal_target(pc+8, ins2);
 assign jal_tgt3 = jal_target(pc+12, ins3);
 
-wire [31:0] jalr_tgt0,jalr_tgt1,jalr_tgt2,jalr_tgt3;
+// NOTE: JALR targets depend on rs1 register value, which is NOT available
+// at predecode. JALR is handled by the backend (ALU computes target,
+// BPU flushes on misprediction). At predecode, we just predict JALR
+// as pc+4 (fall-through) and let it pass through normally.
 
 always@(*)begin
 
-if((branch0 || jump0 || jalr0))begin
+if(branch0 || jump0)begin
 
-pc_out = (branch0 ? br_tgt0 : (jump0 ? jal_tgt0 : jalr_tgt0)); 
+pc_out = (branch0 ? br_tgt0 : jal_tgt0); 
 valid = 4'b0001;
 
 end
 
-else if((branch1 || jump1 || jalr1))begin
+else if(jalr0)begin
+// JALR in slot 0: target unknown, advance to next fetch group
+pc_out = pc + 16;
+valid = 4'b0001;
 
-pc_out = (branch1 ? br_tgt1 : (jump1 ? jal_tgt1 : jalr_tgt1)); 
+end
+
+else if(branch1 || jump1)begin
+
+pc_out = (branch1 ? br_tgt1 : jal_tgt1); 
 valid = 4'b0011;
 
 end
 
-else if((branch2 || jump2 || jalr2))begin
+else if(jalr1)begin
+// JALR in slot 1: target unknown, advance to next fetch group
+pc_out = pc + 16;
+valid = 4'b0011;
 
-pc_out = (branch2 ? br_tgt2 : (jump2 ? jal_tgt2 : jalr_tgt2)); 
+end
+
+else if(branch2 || jump2)begin
+
+pc_out = (branch2 ? br_tgt2 : jal_tgt2); 
 valid = 4'b0111;
 
 end
 
-else if((branch3 || jump3 || jalr3))begin
+else if(jalr2)begin
+// JALR in slot 2: target unknown, advance to next fetch group
+pc_out = pc + 16;
+valid = 4'b0111;
 
-pc_out = (branch3 ? br_tgt3 : (jump3 ? jal_tgt3 : jalr_tgt3)); 
+end
+
+else if(branch3 || jump3)begin
+
+pc_out = (branch3 ? br_tgt3 : jal_tgt3); 
+valid = 4'b1111;
+
+end
+
+else if(jalr3)begin
+pc_out = pc + 16;
 valid = 4'b1111;
 
 end

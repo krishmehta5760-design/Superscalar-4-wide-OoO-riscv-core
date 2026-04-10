@@ -45,7 +45,20 @@ output reg [31:0] ex_src2_data_0,ex_src2_data_1,ex_src2_data_2,ex_src2_data_3;
 
 always@(posedge clk or negedge rst)begin
 
-if(!rst || flush)begin
+if(!rst)begin
+{ex_prd_0,ex_prd_1,ex_prd_2,ex_prd_3} <= 28'd0;
+{ex_imm_0,ex_imm_1,ex_imm_2,ex_imm_3} <= 128'd0;
+{ex_func7_0,ex_func7_1,ex_func7_2,ex_func7_3} <= 28'd0;
+{ex_func3_0,ex_func3_1,ex_func3_2,ex_func3_3} <= 12'd0;
+{ex_opcode_0,ex_opcode_1,ex_opcode_2,ex_opcode_3} <= 28'd0;
+{ex_has_dest,ex_is_branch,ex_is_jump,ex_is_jalr,ex_valid} <= 20'd0;
+{ex_src1_data_0,ex_src1_data_1,ex_src1_data_2,ex_src1_data_3} <= 128'd0;
+{ex_src2_data_0,ex_src2_data_1,ex_src2_data_2,ex_src2_data_3} <= 128'd0;
+{ex_pc_0,ex_pc_1,ex_pc_2,ex_pc_3} <= 128'd0;
+ex_is_mul_3 <= 1'b0;
+end
+
+else if(flush)begin
 {ex_prd_0,ex_prd_1,ex_prd_2,ex_prd_3} <= 28'd0;
 {ex_imm_0,ex_imm_1,ex_imm_2,ex_imm_3} <= 128'd0;
 {ex_func7_0,ex_func7_1,ex_func7_2,ex_func7_3} <= 28'd0;

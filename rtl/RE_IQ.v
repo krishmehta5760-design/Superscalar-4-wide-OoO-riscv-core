@@ -52,8 +52,7 @@ output reg [4:0] rd_0_IQ,rd_1_IQ,rd_2_IQ,rd_3_IQ;
 
 always@(posedge clk or negedge rst)begin
 
-if(!rst || flush)begin
-
+if(!rst)begin
 {prs1_0_IQ,prs1_1_IQ,prs1_2_IQ,prs1_3_IQ} <= 28'd0;
 {prs2_0_IQ,prs2_1_IQ,prs2_2_IQ,prs2_3_IQ} <= 28'd0;
 {prd_0_IQ,prd_1_IQ,prd_2_IQ,prd_3_IQ} <= 28'd0;
@@ -66,7 +65,21 @@ if(!rst || flush)begin
 valid_IQ <= 4'd0;
 {rd_0_IQ,rd_1_IQ,rd_2_IQ,rd_3_IQ} <= 20'd0;
 {pc_0_IQ, pc_1_IQ, pc_2_IQ, pc_3_IQ} <= 128'd0;
+end
 
+else if(flush)begin
+{prs1_0_IQ,prs1_1_IQ,prs1_2_IQ,prs1_3_IQ} <= 28'd0;
+{prs2_0_IQ,prs2_1_IQ,prs2_2_IQ,prs2_3_IQ} <= 28'd0;
+{prd_0_IQ,prd_1_IQ,prd_2_IQ,prd_3_IQ} <= 28'd0;
+{old_prd_0_IQ,old_prd_1_IQ,old_prd_2_IQ,old_prd_3_IQ} <= 28'd0;
+{imm_0_IQ,imm_1_IQ,imm_2_IQ,imm_3_IQ} <= 128'd0;
+{func7_0_IQ,func7_1_IQ,func7_2_IQ,func7_3_IQ} <= 28'd0;
+{func3_0_IQ,func3_1_IQ,func3_2_IQ,func3_3_IQ} <= 12'd0;
+{opcode_0_IQ,opcode_1_IQ,opcode_2_IQ,opcode_3_IQ} <= 28'd0;
+{has_dest_IQ,is_branch_IQ,is_jump_IQ,is_jalr_IQ,is_load_IQ,is_store_IQ} <= 24'd0;
+valid_IQ <= 4'd0;
+{rd_0_IQ,rd_1_IQ,rd_2_IQ,rd_3_IQ} <= 20'd0;
+{pc_0_IQ, pc_1_IQ, pc_2_IQ, pc_3_IQ} <= 128'd0;
 end
 
 else if(!stall_R)begin

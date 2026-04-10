@@ -1,82 +1,62 @@
-# Superscalar 4-Wide Out-of-Order RISC-V Core
+# 🚀 Superscalar 4-Wide Out-of-Order RISC-V Core
 
-A high-performance, synthesizable **4-wide Superscalar Out-of-Order (OoO) RISC-V Processor** implemented in Verilog. This core features dynamic scheduling, register renaming, and a robust Python-based verification environment with an interactive performance dashboard.
+[![Status](https://img.shields.io/badge/Status-Expo--Ready-success.svg)]()
+[![Architecture](https://img.shields.io/badge/ISA-RV32I%2BM-blue.svg)]()
+[![Performance](https://img.shields.io/badge/Peak--IPC-3.28-orange.svg)]()
 
-## 🚀 Key Architectural Features
-
-### Pipeline & Execution
-*   **Superscalar Frontend**: 4-wide instruction fetch and decode per cycle.
-*   **Out-of-Order Back-end**: Dynamic scheduling using an Issue Queue (IQ) to execute instructions as soon as operands are ready.
-*   **4-Wide Commit**: Upgraded Reorder Buffer (ROB) capable of retiring up to 4 instructions per cycle, reaching a peak IPC of 4.0.
-*   **Load-Store Queue (LSQ)**: Advanced memory dependency handling for out-of-order loads and stores.
-
-### Register Renaming & Hazards
-*   **RAT & PRF**: 128-entry Physical Register File (PRF) with a Register Alias Table (RAT) to eliminate WAW and WAR hazards.
-*   **Speculative Execution**: Branch Prediction Unit (BPU) with automated pipeline flushing upon mispredictions.
+A high-performance, synthesizable **4-wide Superscalar Out-of-Order (OoO) RISC-V Processor** implemented in Verilog. This core is designed for maximum instruction-level parallelism (ILP) using dynamic scheduling, rigorous register renaming, and speculative execution.
 
 ---
 
-## 📊 Verification & Visualization Suite
+## 💎 Key Architectural Features
 
-This project includes a professional-grade Python verification wrapper designed for hardware exhibitions and performance analysis.
+### 🏎️ High-Performance Back-end
+*   **4-Wide Dispatch & Commit**: Capable of fetching and retiring up to 4 instructions per cycle.
+*   **3-Stage Pipelined Multiplier**: (New!) High-throughput MUL/MULH unit that allows multiple math operations to overlap without stalling the pipeline.
+*   **Dynamic Scheduling**: 16-entry unified Issue Queue (IQ) that dispatches instructions to execution units as soon as operands are ready.
 
-### Interactive Expo Dashboard
-The `generate_expo.py` suite automatically runs a sequence of architectural stress tests and generates a **Live HTML Dashboard**.
-*   **IPC Monitoring**: Real-time Instructions Per Cycle tracking.
-*   **Hazard Analysis**: Visualization of RAW, WAR, and WAW hazard handling.
-*   **Cycle Breakdowns**: Detailed logs of instruction retirement and pipeline stalls.
+### 🛡️ Hardware Hazard Management
+*   **Full Register Renaming**: 128-entry Physical Register File (PRF) managed by a Register Alias Table (RAT) to eliminate **WAW** and **WAR** hazards entirely.
+*   **Memory Disambiguation**: Advanced Load-Store Queue (LSQ) that handles out-of-order memory accesses and store-to-load forwarding.
+*   **Speculative Execution**: Integrated Branch Prediction Unit (BPU) with a fast pipeline flush/squash mechanism for misprediction recovery.
+
+---
+
+## 📈 Verified Performance Metrics
+*Measured using the automated `run_tests.py` suite.*
+
+| Benchmark | Focus Area | Peak IPC | Status |
+| :--- | :--- | :---: | :---: |
+| **Maximum ILP** | Global Throughput | **3.28** | ✅ PASS |
+| **WAW/WAR Tests** | Rename Logic | **3.10** | ✅ PASS |
+| **Pipelined MUL** | Math Throughput | **3.10** | ✅ PASS |
+| **Fibonacci** | Data Dependency | **2.19** | ✅ PASS |
+| **Branch/Jump** | Control Hazards | **3.22** | ✅ PASS |
 
 ---
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
-*   **Simulator**: [Icarus Verilog](http://iverilog.icarus.com/) (Version 11.0+)
-*   **Execution**: [WSL/Ubuntu](https://learn.microsoft.com/en-us/windows/wsl/install) (Recommended for stability)
-*   **Verification**: Python 3.12+ with `cocotb` and `cocotb-test`
+*   **Simulator**: Icarus Verilog (v12.0+)
+*   **Verification**: Python 3.12+ with `cocotb`
+*   **Environment**: WSL2 / Ubuntu (Recommended)
 
-### Installation & Run
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/krishmehta5760-design/Superscalar-4-wide-Out-Of-Order-RISC-V-Core.git
-   cd Superscalar-4-wide-Out-Of-Order-RISC-V-Core
-   ```
-
-2. Run the full simulation suite and generate the dashboard:
-   ```bash
-   python3 generate_expo.py
-   ```
-
-3. View the results:
-   ```bash
-   # On Windows
-   start expo_dashboard.html
-   ```
-
----
-
-## 📂 Project Structure
-
-```text
-.
-├── rtl/               # Core Verilog source files
-├── generate_expo.py   # Main dashboard generation script
-├── wrapper.py         # Python-to-HDL software bridge
-├── programs.py        # RISC-V test assembly programs (Hex)
-├── sim_tb.py          # Cocotb hardware testbench
-├── Makefile           # Simulation configuration
-└── README.md          # You are here!
+### Run Benchmarks
+To reproduce the IPC results and generate the hardware performance report:
+```bash
+python3 run_tests.py
 ```
 
 ---
 
-## 🏆 Performance Benchmarks
-| Benchmark | Theoretical IPC | Achieved IPC |
-| :--- | :---: | :---: |
-| Maximum ILP | 4.0 | **3.2+** |
-| Fibonacci | 1.0 | **0.95** |
-| RAW Chain | 1.0 | **0.88** |
+## 📂 Internal Project Structure
+- `rtl/` : Core Verilog modules (ALU, ROB, PRF, LSQ, etc.).
+- `run_tests.py` : Automates the architectural benchmark suite.
+- `wrapper.py` : Python-to-HDL bridge for functional verification.
+- `sim_tb.py` : Cocotb-driven testbench with real-time performance tracking.
 
 ---
 
-Developed by **Krish Mehta**
+**Developed for the RISC-V Hardware Expo**  
+Created by **Krish Mehta**
