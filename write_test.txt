@@ -1,2 +1,0 @@
-# SAFEGUARD TEST
-This file is a test to verify write access for the multiplier migration. Done at 2026-04-06.
