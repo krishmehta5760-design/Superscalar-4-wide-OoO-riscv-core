@@ -58,5 +58,3 @@ python3 run_tests.py
 
 ---
 
-**Developed for the RISC-V Hardware Expo**  
-Created by **Krish Mehta**
