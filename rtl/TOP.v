@@ -36,7 +36,7 @@ module TOP(clk,rst,next,pc,ins0,ins1,ins2,ins3,in0,in1,in2,in3,valid,in0_out,in1
            wb_valid_0,wb_valid_1,wb_valid_2,wb_valid_3,
            wb_branch_taken_0,wb_branch_taken_1,wb_branch_taken_2,wb_branch_taken_3,
            wb_is_branch_0,wb_is_branch_1,wb_is_branch_2,wb_is_branch_3,
-           lsq_store_ready,mispredicted,flush,is_branch_out_0,is_branch_out_1,is_branch_out_2,is_branch_out_3,alu3_stalled);
+           lsq_store_ready,mispredicted,flush,correct_pc,rob_count,is_branch_out_0,is_branch_out_1,is_branch_out_2,is_branch_out_3,alu3_stalled);
            
 input clk,rst;
 output [31:0] next,pc,ins0,ins1,ins2,ins3,in0,in1,in2,in3,in0_out,in1_out,in2_out,in3_out;
@@ -91,6 +91,8 @@ output [3:0] rob_free_valid,commit_valid;
 output queue_full,queue_almost_full;
 output rob_full,rob_almost_full,rob_store_commit;
 output lsq_full,lsq_cdb_valid,mem_we,mem_re,ready;
+output [31:0] correct_pc;
+output [5:0] rob_count;
 output [31:0] exec_data_prs1_0, exec_data_prs1_1, exec_data_prs1_2, exec_data_prs1_3;
 output [31:0] exec_data_prs2_0, exec_data_prs2_1, exec_data_prs2_2, exec_data_prs2_3;
 
@@ -131,7 +133,7 @@ wire [4:0] rat_restore_rd;
 wire [6:0] rat_restore_prd;
 wire [6:0] rat_restore_new_prd;
 
-wire [31:0] correct_pc;
+// correct_pc is now an output port
 wire [31:0] pc_fetch_0,pc_fetch_1,pc_fetch_2,pc_fetch_3; 
 wire [31:0] pc_iq_0,pc_iq_1,pc_iq_2,pc_iq_3;    
 wire [31:0] issue_pc_0, issue_pc_1, issue_pc_2, issue_pc_3; 

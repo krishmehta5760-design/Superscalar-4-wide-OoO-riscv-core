@@ -8,9 +8,18 @@ output reg [31:0] ins3;
 reg [31:0] inst_mem [0:255];
 
 initial begin
+    // HARDCODED FALLBACK: If program.mem fail to load, we have real instructions here.
+    // This is our minimal test: li x1,1; li x2,2; add x3,x2,x1; nop; ...
+    inst_mem[0] = 32'h00100093; 
+    inst_mem[1] = 32'h00200113; 
+    inst_mem[2] = 32'h001101b3; 
+    inst_mem[3] = 32'h00000013; 
+    inst_mem[4] = 32'h00000013;
+    inst_mem[5] = 32'h00000013;
+    inst_mem[6] = 32'h00000013;
+    inst_mem[7] = 32'h00000013;
 
-$readmemh("program.mem", inst_mem);
-
+    $readmemh("program.mem", inst_mem);
 end
 
 always@(*)begin

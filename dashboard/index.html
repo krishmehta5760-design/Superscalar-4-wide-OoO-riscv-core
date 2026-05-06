@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Explorer | 4-Wide Superscalar OoO Core</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .glass { background: rgba(22, 27, 34, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .glow-red { box-shadow: 0 0 15px rgba(255, 60, 60, 0.5); }
+        .glow-blue { box-shadow: 0 0 15px rgba(60, 160, 255, 0.5); }
+        .glow-green { box-shadow: 0 0 15px rgba(60, 255, 100, 0.5); }
+        .glow-yellow { box-shadow: 0 0 15px rgba(255, 200, 60, 0.5); }
+        canvas { filter: drop-shadow(0 0 10px rgba(60, 160, 255, 0.2)); }
+    </style>
+</head>
+<body class="h-screen w-screen p-6 flex flex-col gap-6">
+
+    <!-- Header -->
+    <header class="flex justify-between items-center glass p-4 rounded-xl">
+        <div>
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                4-Wide Superscalar OoO RV32IM
+            </h1>
+            <p class="text-gray-400 text-sm mt-1">Live Hardware Telemetry via Nexys Video</p>
+        </div>
+        <div id="mode-badge" class="px-6 py-2 rounded-full font-bold uppercase tracking-widest bg-gray-800 text-gray-400 border border-gray-600 transition-all duration-300">
+            CONNECTING...
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex gap-6 overflow-hidden">
+        
+        <!-- Turbo Mode: Analytics (Hidden by default) -->
+        <section id="turbo-view" class="hidden w-full h-full flex-col gap-6">
+            <div class="flex gap-6 h-48">
+                <!-- Stat Cards -->
+                <div class="flex-1 glass rounded-xl p-6 flex flex-col justify-center items-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-blue-500 opacity-5"></div>
+                    <p class="text-gray-400 font-semibold uppercase tracking-widest text-sm">Real-Time IPC</p>
+                    <p id="stat-ipc" class="text-6xl font-bold text-blue-400 mt-2">0.00</p>
+                </div>
+                <div class="flex-1 glass rounded-xl p-6 flex flex-col justify-center items-center relative overflow-hidden">
+                    <p class="text-gray-400 font-semibold uppercase tracking-widest text-sm">Total Commits</p>
+                    <p id="stat-commits" class="text-5xl font-mono text-emerald-400 mt-2 gap-1 flex items-baseline">
+                        0 <span class="text-lg text-gray-500">insts</span>
+                    </p>
+                </div>
+                <div class="flex-1 glass rounded-xl p-6 flex flex-col justify-center items-center relative overflow-hidden">
+                    <p class="text-gray-400 font-semibold uppercase tracking-widest text-sm">Core Cycles</p>
+                    <p id="stat-cycles" class="text-5xl font-mono text-purple-400 mt-2 gap-1 flex items-baseline">
+                        0 <span class="text-lg text-gray-500">cyc</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex-1 glass rounded-xl p-6 relative">
+                <h2 class="text-xl font-semibold mb-4 text-gray-300">Intructions Per Cycle (IPC) Timeline</h2>
+                <div class="absolute inset-x-6 top-16 bottom-6">
+                    <canvas id="ipcChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visualizer Mode: ROB Tetris -->
+        <section id="visual-view" class="w-full h-full flex gap-6">
+            <div class="w-1/3 glass rounded-xl p-6 flex flex-col">
+                <h2 class="text-xl font-semibold mb-8 text-white border-b border-gray-700 pb-2">Legend & Status</h2>
+                <ul class="space-y-6 flex-1 text-lg">
+                    <li class="flex items-center gap-4"><div class="w-6 h-6 rounded bg-gray-600"></div> <span class="text-gray-300">Dispatched (Waiting)</span></li>
+                    <li class="flex items-center gap-4"><div class="w-6 h-6 rounded bg-yellow-400 glow-yellow"></div> <span class="text-white font-bold">Executed (OoO)</span></li>
+                    <li class="flex items-center gap-4"><div class="w-6 h-6 rounded bg-emerald-500 glow-green"></div> <span class="text-emerald-200">Committed (In-Order)</span></li>
+                </ul>
+                <div class="p-4 bg-gray-800 rounded-lg border border-gray-700 text-sm font-mono whitespace-pre-wrap" id="event-log">Waiting for events...</div>
+            </div>
+
+            <div class="flex-1 glass rounded-xl p-6 flex flex-col justify-center items-center relative">
+                <h2 class="absolute top-6 left-6 text-xl font-semibold text-gray-300">Reorder Buffer (ROB) State</h2>
+                <p class="absolute bottom-6 text-center text-gray-500 w-full">Watch younger instructions finish Out-Of-Order (Yellow)<br>while the Head Pointer waits to Commit In-Order.</p>
+                <div class="relative w-[500px] h-[500px]">
+                    <canvas id="robCanvas" width="500" height="500"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-gray-200 to-gray-500">32-ENTRY</span>
+                        <span class="text-xl font-bold text-gray-500 uppercase tracking-[0.2em] mt-1">Circular Array</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Data and State
+        let mode = "connecting";
+        let ipcHistory = [];
+        let timeLabels = [];
+        let lastCycles = 0;
+        let lastCommits = 0;
+        let ipcBuffer = []; // Used for smoothing the realtime IPC math
+
+        let robState = new Array(32).fill(0); // 0=Empty, 1=Dispatched, 2=Executed, 3=Committed
+        let headPtr = null;
+        let tailPtr = null;
+
+        // DOM Elements
+        const badge = document.getElementById("mode-badge");
+        const turboView = document.getElementById("turbo-view");
+        const visualView = document.getElementById("visual-view");
+        const ctxIpc = document.getElementById('ipcChart').getContext('2d');
+        const robCanvas = document.getElementById('robCanvas');
+        const ctxRob = robCanvas.getContext('2d');
+
+        // Draw the Circular ROB
+        function drawROB() {
+            ctxRob.clearRect(0, 0, 500, 500);
+            const cx = 250, cy = 250;
+            const rInner = 160, rOuter = 210;
+            const rMid = (rInner + rOuter) / 2;
+            
+            // Draw background track
+            ctxRob.beginPath();
+            ctxRob.arc(cx, cy, rMid, 0, 2*Math.PI);
+            ctxRob.lineWidth = 50;
+            ctxRob.strokeStyle = '#1a1f26';
+            ctxRob.stroke();
+
+            // Draw Head and Tail Pointers (Radar style)
+            const drawHand = (index, color, length, label) => {
+                if (index === null) return;
+                const angle = (index / 32) * 2 * Math.PI - (Math.PI / 2);
+                const x = cx + Math.cos(angle) * length;
+                const y = cy + Math.sin(angle) * length;
+                
+                ctxRob.beginPath();
+                ctxRob.moveTo(cx, cy);
+                ctxRob.lineTo(x, y);
+                ctxRob.strokeStyle = color;
+                ctxRob.lineWidth = 4;
+                ctxRob.lineCap = "round";
+                ctxRob.stroke();
+                
+                // Draw Hand Label
+                ctxRob.fillStyle = color;
+                ctxRob.font = "bold 14px monospace";
+                ctxRob.fillText(label, cx + Math.cos(angle) * (length + 20) - 20, cy + Math.sin(angle) * (length + 20) + 5);
+            };
+
+            // Draw the Radar Hands indicating where the front and back of the queue are
+            drawHand(tailPtr, '#3b82f6', rInner - 15, "TAIL");
+            drawHand(headPtr, '#10b981', rInner - 40, "HEAD");
+
+            // Draw segments
+            for(let i=0; i<32; i++) {
+                const angle = (i / 32) * 2 * Math.PI - (Math.PI / 2);
+                const x = cx + Math.cos(angle) * rMid;
+                const y = cy + Math.sin(angle) * rMid;
+
+                ctxRob.beginPath();
+                ctxRob.arc(x, y, 18, 0, 2 * Math.PI);
+                
+                if (robState[i] === 1) {
+                    ctxRob.fillStyle = '#4b5563'; // Dispatched (Grey)
+                    ctxRob.shadowBlur = 0;
+                } else if (robState[i] === 2) {
+                    ctxRob.fillStyle = '#fbbf24'; // Executed (Yellow)
+                    ctxRob.shadowColor = 'rgba(251, 191, 36, 0.6)';
+                    ctxRob.shadowBlur = 15;
+                } else if (robState[i] === 3) {
+                    ctxRob.fillStyle = '#10b981'; // Committed (Green)
+                    ctxRob.shadowColor = 'rgba(16, 185, 129, 0.8)';
+                    ctxRob.shadowBlur = 20;
+                } else {
+                    ctxRob.fillStyle = '#21262d'; // Empty
+                    ctxRob.shadowBlur = 0;
+                }
+                ctxRob.fill();
+                
+                ctxRob.strokeStyle = '#0d1117';
+                ctxRob.lineWidth = 2;
+                ctxRob.stroke();
+                
+                // Draw little index numbers on top of the circles so they know what tag is what
+                ctxRob.fillStyle = (robState[i] === 0 || robState[i] === 1) ? '#9ca3af' : '#111827';
+                ctxRob.font = "bold 12px monospace";
+                ctxRob.textAlign = "center";
+                ctxRob.textBaseline = "middle";
+                ctxRob.fillText(i, x, y);
+            }
+        }
+        drawROB();
+
+        // Chart.js Setup
+        const chart = new Chart(ctxIpc, {
+            type: 'line',
+            data: { labels: timeLabels, datasets: [{
+                label: 'Instructions Per Cycle',
+                data: ipcHistory,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0
+            }]},
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { y: { min: 0, max: 4, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { display: false } },
+                plugins: { legend: { display: false } },
+                animation: { duration: 0 }
+            }
+        });
+
+        // Log formatter
+        function logEvent(msg) {
+            const el = document.getElementById('event-log');
+            el.innerHTML = msg + "\n" + el.innerHTML.split('\n').slice(0,4).join('\n');
+        }
+
+        // WebSocket Connection
+        const ws = new WebSocket('ws://localhost:8080');
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            // Mode Switcher
+            if (data.mode !== mode) {
+                mode = data.mode;
+                if (mode === "turbo") {
+                    badge.className = "px-6 py-2 rounded-full font-bold uppercase tracking-widest border transition-all duration-300 bg-red-900/40 text-red-400 border-red-500 glow-red";
+                    badge.innerText = "TURBO 25MHz";
+                    turboView.classList.remove('hidden');
+                    turboView.classList.add('flex');
+                    visualView.classList.add('hidden');
+                } else if (mode === "visual") {
+                    badge.className = "px-6 py-2 rounded-full font-bold uppercase tracking-widest border transition-all duration-300 bg-blue-900/40 text-blue-400 border-blue-500 glow-blue";
+                    badge.innerText = "VISUAL 5Hz";
+                    turboView.classList.add('hidden');
+                    turboView.classList.remove('flex');
+                    visualView.classList.remove('hidden');
+                }
+            }
+
+            // Handle Data
+            if (mode === "turbo") {
+                let diffCycles = data.cycles - lastCycles;
+                let diffCommits = data.commits - lastCommits;
+                
+                // Hardware counters are 32-bit, so they overflow and wrap around to 0 every ~3 minutes
+                // This math instantly fixes any negative diffs caused by the wrap!
+                if (diffCycles < 0) diffCycles += 4294967296;
+                if (diffCommits < 0) diffCommits += 4294967296;
+                
+                if (diffCycles > 0) {
+                    let rawIpc = diffCommits / diffCycles;
+                    
+                    // A 4-wide processor physically cannot exceed an IPC of 4.0. 
+                    // Any glitch spikes from UART dropped bytes or overflows are clamped here.
+                    if (rawIpc > 4.0) rawIpc = 4.0;
+                    if (rawIpc < 0.0) rawIpc = 0.0;
+                    
+                    // Hardware spits out 20 updates a second. We apply a 5-tick rolling average
+                    // to smooth out the jitter so it's beautifully readable to the human eye.
+                    ipcBuffer.push(rawIpc);
+                    if (ipcBuffer.length > 5) ipcBuffer.shift();
+                    const smoothIpc = ipcBuffer.reduce((a, b) => a + b, 0) / ipcBuffer.length;
+
+                    document.getElementById('stat-ipc').innerText = smoothIpc.toFixed(2);
+                    
+                    ipcHistory.push(smoothIpc);
+                    timeLabels.push('');
+                    
+                    // Increase history from 2.5 seconds (50 points) to 15 seconds (300 points)
+                    // so the graph flows slowly and gracefully across the screen!
+                    if(ipcHistory.length > 300) { ipcHistory.shift(); timeLabels.shift(); }
+                    
+                    // Only update the actual physical canvas every 2nd tick to relieve browser load
+                    if (ipcHistory.length % 2 === 0) chart.update();
+                }
+                
+                document.getElementById('stat-commits').innerHTML = data.commits.toLocaleString() + ' <span class="text-lg text-gray-500">insts</span>';
+                document.getElementById('stat-cycles').innerHTML = data.cycles.toLocaleString() + ' <span class="text-lg text-gray-500">cyc</span>';
+                
+                lastCycles = data.cycles;
+                lastCommits = data.commits;
+            } 
+            else if (mode === "visual") {
+                let updated = false;
+                if (data.dispatch.valid) {
+                    const tag = data.dispatch.tag % 32;
+                    tailPtr = tag; // Move Tail Hand
+                    robState[tag] = 1;
+                    logEvent(`[DISPATCH] Tag: ${data.dispatch.tag}`);
+                    updated = true;
+                }
+                if (data.execute.valid) {
+                    robState[data.execute.tag % 32] = 2;
+                    logEvent(`[EXECUTE]  Tag: ${data.execute.tag} (OoO)`);
+                    updated = true;
+                }
+                if (data.commit.valid) {
+                    const tag = data.commit.tag % 32;
+                    headPtr = tag; // Move Head Hand
+                    robState[tag] = 3; // Light it up Bright Green
+                    logEvent(`[COMMIT]   Tag: ${data.commit.tag} (In-Order)`);
+                    
+                    // Let the green light linger for almost a full second so human eyes can track it!
+                    setTimeout(() => {
+                        if (robState[tag] === 3) {
+                            robState[tag] = 0; // Fade back to empty black
+                            drawROB();
+                        }
+                    }, 800);
+                    
+                    updated = true;
+                }
+                
+                if (updated) drawROB();
+            }
+        };
+    </script>
+</body>
+</html>
